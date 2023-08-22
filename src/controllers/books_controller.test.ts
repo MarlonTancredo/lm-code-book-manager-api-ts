@@ -6,130 +6,151 @@ import * as bookService from "../services/books";
 jest.mock("../services/books");
 
 afterEach(() => {
-	jest.clearAllMocks();
+  jest.clearAllMocks();
 });
 
 const dummyBookData = [
-	{
-		bookId: 1,
-		title: "The Hobbit",
-		author: "J. R. R. Tolkien",
-		description: "Someone finds a nice piece of jewellery while on holiday.",
-	},
-	{
-		bookId: 2,
-		title: "The Shop Before Life",
-		author: "Neil Hughes",
-		description:
-			"Before being born, each person must visit the magical Shop Before Life, where they choose what kind of person they will become down on Earth...",
-	},
+  {
+    bookId: 1,
+    title: "The Hobbit",
+    author: "J. R. R. Tolkien",
+    description: "Someone finds a nice piece of jewellery while on holiday.",
+  },
+  {
+    bookId: 2,
+    title: "The Shop Before Life",
+    author: "Neil Hughes",
+    description:
+      "Before being born, each person must visit the magical Shop Before Life, where they choose what kind of person they will become down on Earth...",
+  },
 ];
 
 describe("GET /api/v1/books endpoint", () => {
-	test("status code successfully 200", async () => {
-		// Act
-		const res = await request(app).get("/api/v1/books");
+  test("status code successfully 200", async () => {
+    // Act
+    const res = await request(app).get("/api/v1/books");
 
-		// Assert
-		expect(res.statusCode).toEqual(200);
-	});
+    // Assert
+    expect(res.statusCode).toEqual(200);
+  });
 
-	test("books successfully returned as empty array when no data returned from the service", async () => {
-		// Arrange
-		jest.spyOn(bookService, "getBooks").mockResolvedValue([]);
-		// Act
-		const res = await request(app).get("/api/v1/books");
+  test("books successfully returned as empty array when no data returned from the service", async () => {
+    // Arrange
+    jest.spyOn(bookService, "getBooks").mockResolvedValue([]);
+    // Act
+    const res = await request(app).get("/api/v1/books");
 
-		// Assert
-		expect(res.body).toEqual([]);
-		expect(res.body.length).toEqual(0);
-	});
+    // Assert
+    expect(res.body).toEqual([]);
+    expect(res.body.length).toEqual(0);
+  });
 
-	test("books successfully returned as array of books", async () => {
-		// Arrange
+  test("books successfully returned as array of books", async () => {
+    // Arrange
 
-		// NB the "as" to `Book[]` takes care of all the missing properties added by sequelize
-		//    such as createdDate etc, that we don't care about for the purposes of this test
-		jest
-			.spyOn(bookService, "getBooks")
-			.mockResolvedValue(dummyBookData as Book[]);
+    // NB the "as" to `Book[]` takes care of all the missing properties added by sequelize
+    //    such as createdDate etc, that we don't care about for the purposes of this test
+    jest
+      .spyOn(bookService, "getBooks")
+      .mockResolvedValue(dummyBookData as Book[]);
 
-		// Act
-		const res = await request(app).get("/api/v1/books");
+    // Act
+    const res = await request(app).get("/api/v1/books");
 
-		// Assert
-		expect(res.body).toEqual(dummyBookData);
-		expect(res.body.length).toEqual(2);
-	});
+    // Assert
+    expect(res.body).toEqual(dummyBookData);
+    expect(res.body.length).toEqual(2);
+  });
 });
 
 describe("GET /api/v1/books/{bookId} endpoint", () => {
-	test("status code successfully 200 for a book that is found", async () => {
-		// Arrange
-		const mockGetBook = jest
-			.spyOn(bookService, "getBook")
-			.mockResolvedValue(dummyBookData[1] as Book);
+  test("status code successfully 200 for a book that is found", async () => {
+    // Arrange
+    const mockGetBook = jest
+      .spyOn(bookService, "getBook")
+      .mockResolvedValue(dummyBookData[1] as Book);
 
-		// Act
-		const res = await request(app).get("/api/v1/books/2");
+    // Act
+    const res = await request(app).get("/api/v1/books/2");
 
-		// Assert
-		expect(res.statusCode).toEqual(200);
-	});
+    // Assert
+    expect(res.statusCode).toEqual(200);
+  });
 
-	test("status code successfully 404 for a book that is not found", async () => {
-		// Arrange
+  test("status code successfully 404 for a book that is not found", async () => {
+    // Arrange
 
-		jest
-			.spyOn(bookService, "getBook")
-			// this is a weird looking type assertion!
-			// it's necessary because TS knows we can't actually return unknown here
-			// BUT we want to check that in the event a book is missing we return a 404
-			.mockResolvedValue(undefined as unknown as Book);
-		// Act
-		const res = await request(app).get("/api/v1/books/77");
+    jest
+      .spyOn(bookService, "getBook")
+      // this is a weird looking type assertion!
+      // it's necessary because TS knows we can't actually return unknown here
+      // BUT we want to check that in the event a book is missing we return a 404
+      .mockResolvedValue(undefined as unknown as Book);
+    // Act
+    const res = await request(app).get("/api/v1/books/77");
 
-		// Assert
-		expect(res.statusCode).toEqual(404);
-	});
+    // Assert
+    expect(res.statusCode).toEqual(404);
+  });
 
-	test("controller successfully returns book object as JSON", async () => {
-		// Arrange
-		jest
-			.spyOn(bookService, "getBook")
-			.mockResolvedValue(dummyBookData[1] as Book);
+  test("controller successfully returns book object as JSON", async () => {
+    // Arrange
+    jest
+      .spyOn(bookService, "getBook")
+      .mockResolvedValue(dummyBookData[1] as Book);
 
-		// Act
-		const res = await request(app).get("/api/v1/books/2");
+    // Act
+    const res = await request(app).get("/api/v1/books/2");
 
-		// Assert
-		expect(res.body).toEqual(dummyBookData[1]);
-	});
+    // Assert
+    expect(res.body).toEqual(dummyBookData[1]);
+  });
 });
 
 describe("POST /api/v1/books endpoint", () => {
-	test("status code successfully 201 for saving a valid book", async () => {
-		// Act
-		const res = await request(app)
-			.post("/api/v1/books")
-			.send({ bookId: 3, title: "Fantastic Mr. Fox", author: "Roald Dahl" });
+  test("status code successfully 201 for saving a valid book", async () => {
+    // Act
+    const res = await request(app)
+      .post("/api/v1/books")
+      .send({ bookId: 3, title: "Fantastic Mr. Fox", author: "Roald Dahl" });
 
-		// Assert
-		expect(res.statusCode).toEqual(201);
-	});
+    // Assert
+    expect(res.statusCode).toEqual(201);
+  });
 
-	test("status code 400 when saving ill formatted JSON", async () => {
-		// Arrange - we can enforce throwing an exception by mocking the implementation
-		jest.spyOn(bookService, "saveBook").mockImplementation(() => {
-			throw new Error("Error saving book");
-		});
+  test("status code 400 when saving ill formatted JSON", async () => {
+    // Arrange - we can enforce throwing an exception by mocking the implementation
+    jest.spyOn(bookService, "saveBook").mockImplementation(() => {
+      throw new Error("Error saving book");
+    });
 
-		// Act
-		const res = await request(app)
-			.post("/api/v1/books")
-			.send({ title: "Fantastic Mr. Fox", author: "Roald Dahl" }); // No bookId
+    // Act
+    const res = await request(app)
+      .post("/api/v1/books")
+      .send({ title: "Fantastic Mr. Fox", author: "Roald Dahl" }); // No bookId
 
-		// Assert
-		expect(res.statusCode).toEqual(400);
-	});
+    // Assert
+    expect(res.statusCode).toEqual(400);
+  });
+});
+
+describe("PUT /api/v1/books endpoint", () => {
+  test("status code successfully 200 for updating a valid book", async () => {
+    // Act
+    const res = await request(app).put("/api/v1/books/2");
+
+    // Assert
+    expect(res.statusCode).toEqual(200);
+  });
+});
+
+describe("DELETE /api/v1/books endpoint", () => {
+  test("status code successfully 200 for deleting a valid book", async () => {
+    // Act
+    const res = await request(app).delete("/api/v1/books/2");
+
+    // Assert
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({ message: "BookId 2 deleted!" });
+  });
 });
