@@ -32,17 +32,15 @@ export const updateBook = async (req: Request, res: Response) => {
   const bookId = parseInt(req.params.bookId);
   const bookUpdateData = req.body;
 
-  if (res.status(200)) {
-    bookService.updateBook(bookId, bookUpdateData);
-    res.json(bookUpdateData);
-  }
+  bookService.updateBook(bookId, bookUpdateData);
+
+  res.status(200).json(bookUpdateData);
 };
 
 export const deleteBook = async (req: Request, res: Response) => {
   const bookId = parseInt(req.params.bookId);
 
-  if (res.status(200)) {
-    bookService.deleteBook(bookId);
-    res.json({ message: `BookId ${bookId} deleted!` });
-  }
+  bookService.deleteBook(bookId);
+
+  res.status(200).json({ message: `BookId ${bookId} deleted!` });
 };
